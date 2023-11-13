@@ -8,19 +8,40 @@ import org.hexworks.mixite.core.api.contract.SatelliteData;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;import java.util.logging.ConsoleHandler;
 import java.util.logging.SimpleFormatter;
 
+import static java.lang.Math.abs;
 
-class Visualizer extends JPanel {
+
+public class Visualizer extends JPanel {
     private final HexagonalGrid<SatelliteData> hexGrid;
 
     private final Board board;
-    static Logger logger = Logger.getLogger("Logger");
-    public Visualizer(HexagonalGrid<SatelliteData> hexGrid, Board board) {
-        this.hexGrid = hexGrid;
+    static Logger logger;
+    public Visualizer(Board board) {
+
         this.board = board;
+        logger = Logger.getLogger(this.getClass().getName());
+
+        ConsoleHandler handler = new ConsoleHandler();
+        handler.setFormatter(new SimpleFormatter());
+        logger.addHandler(handler);
+        logger.setLevel(Level.INFO);
+
+        HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>()
+                .setGridHeight(11)
+                .setGridWidth(11)
+                .setGridLayout(HexagonalGridLayout.HEXAGONAL)
+                .setOrientation(HexagonOrientation.FLAT_TOP)
+                .setRadius(40);
+        this.hexGrid = builder.build();
+
+
     }
 
     @Override
@@ -39,12 +60,13 @@ class Visualizer extends JPanel {
             Cell cell = this.board.getCellForPosition(hexagon.getCubeCoordinate().getGridX() - 5, hexagon.getCubeCoordinate().getGridZ() - 3);
             Color cl;
             if (cell.getCellColor() == CellColor.GREY) {
-                cl = new Color(80,80,80);
+                cl = Colors.GREY;
             } else if(cell.getCellColor() == CellColor.WHITE){
-                cl = new Color(200,200,200);
+                cl = Colors.WHITE;
             } else {
-                cl = new Color(10,10,10);
+                cl = Colors.BLACK;
             }
+
             for(org.hexworks.mixite.core.api.Point p : hexagon.getPoints()) {
                 // Do you stuff with point.coordinateX, point.coordinateY
                 xPoints[i] = (int)p.getCoordinateX();
@@ -53,41 +75,28 @@ class Visualizer extends JPanel {
 
             }
             g.fillPolygon(xPoints, yPoints, 6);
-            String text = String.valueOf((hexagon.getCubeCoordinate().getGridX() - 5)) + ",  " + String.valueOf((hexagon.getCubeCoordinate().getGridZ() - 3));
+
             g.setColor(Color.RED);
-            g.drawString(text, (int) (hexagon.getCenterX() - g.getFontMetrics().stringWidth(text) / 2), (int) (hexagon.getCenterY()));
+            if (!cell.isEmpty()){
+                ImageIcon icon = Icons.getIconForPiece(cell.getPieceType(), cell.getPlayerColor());
+                int imageX = (int) (hexagon.getCenterX()) - icon.getIconWidth() / 2;
+                int imageY = (int) (hexagon.getCenterY()) - icon.getIconHeight() / 2;
+                g.drawImage(icon.getImage(), imageX, imageY, this);
+            }
+            String text = String.valueOf((hexagon.getCubeCoordinate().getGridX() - 5)) + ",  " + String.valueOf((hexagon.getCubeCoordinate().getGridZ() - 3));
+//            g.drawString(text, (int) (hexagon.getCenterX() - g.getFontMetrics().stringWidth(text) / 2), (int) (hexagon.getCenterY()));
         }
 
     }
 
-    public static void main(String[] args) {
-
-
-
-        ConsoleHandler handler = new ConsoleHandler();
-        handler.setFormatter(new SimpleFormatter());
-        logger.addHandler(handler);
-        logger.setLevel(Level.INFO);
-
-
-
+    public void showBoard(){
         JFrame frame = new JFrame("Hexagon Drawer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 400); // Adjust the size as needed
 
-
-        HexagonalGridBuilder<SatelliteData> builder = new HexagonalGridBuilder<>()
-                .setGridHeight(11)
-                .setGridWidth(11)
-                .setGridLayout(HexagonalGridLayout.HEXAGONAL)
-                .setOrientation(HexagonOrientation.FLAT_TOP)
-                .setRadius(40);
-        HexagonalGrid<SatelliteData> hexagonalGrid = builder.build();
-
-
-
-        Visualizer hexagonDrawer = new Visualizer(hexagonalGrid, new Board());
-        frame.add(hexagonDrawer);
+        frame.add(this);
         frame.setVisible(true);
     }
+
+
 }
