@@ -1,16 +1,15 @@
 package org.chexss.pieces;
 
-import org.chexss.game.Board;
-import org.chexss.game.Cell;
-import org.chexss.game.Move;
+import org.chexss.board.Board;
+import org.chexss.board.Cell;
+import org.chexss.board.Move;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Pawn{
-    public static List<Move> generateMoves(Board board, int x, int z){
+    public static List<Move> generateMoves(Board board, Cell cell){
         List<Move> moveList = new ArrayList<>();
-        Cell cell = board.getCellForPosition(x,z);
         if (cell.isEmpty()){
             return moveList;
         }

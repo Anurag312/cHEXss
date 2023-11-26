@@ -1,4 +1,4 @@
-package org.chexss.game;
+package org.chexss.board;
 
 public class Move {
     private final Cell sourceCell;
